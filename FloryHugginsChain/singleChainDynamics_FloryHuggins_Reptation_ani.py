@@ -3,7 +3,7 @@
 # v2 --- 重心を奇跡として描画（240121）
 # Flory-Huggins的な配置を実現（240124）
 # 管の中のレプテーションを記述できるように修正
-# 管から全然抜けない・・・
+# 管から全然抜けない・・・ということはない
 
 import numpy as np
 import matplotlib.pyplot as plt
