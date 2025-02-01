@@ -103,7 +103,7 @@ anim.controls()
 
 if initConfig == "F": # Fully Extendedからスタートする場合
     savefile = "./gif/SingleChain_Dynamics_N{0}_{1}steps_FE_with_R".format(N, t_max)
-if initConfig == "R": # Fully Extendedからスタートする場合
+if initConfig == "R": # Random Coilからスタートする場合
     savefile = "./gif/SingleChain_Dynamics_N{0}_{1}steps_RC_with_R".format(N, t_max)
 anim.save_gif(savefile)
 
