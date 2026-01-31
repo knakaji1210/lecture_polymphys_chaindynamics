@@ -1,11 +1,11 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
-# Flory-Huggins的に分岐数zに対してz-1で対応するようにすることはできていない
-# v2 --- 重心を奇跡として描画（240121）
+# SAW Chainをモデル化（260128作成開始）
+# 各ステップで、配置の変化が伝播しないように変更を加えた
 
 import numpy as np
 import matplotlib.pyplot as plt
 import animatplot as amp
-import singleChainDynamicsFunc_v2 as scd
+import singleChainDynamicsFunc_SAW as scd
 
 try:
     N = int(input('Degree of polymerization (default=100): '))
@@ -36,25 +36,32 @@ try:
 except ValueError: 
     centerConfig = "O"
 
+# 初期配置の設定
 if initConfig == "F": # Fully Extendedからスタートする場合
-    init_coordinate_list = scd.initConfig_FullExted(N)
-    x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+    coordinate_list = scd.initConfig_FullExted(N)
+    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
     x_list_steps.append(x_list)
     y_list_steps.append(y_list)
     plot_lim = 0.6*N
 else: #　Random Coilからスタートする場合
-    init_coordinate_list = scd.initConfig_Random(N)
-    x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+    coordinate_list = scd.initConfig_Random(N)
+    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
     x_list_steps.append(x_list)
     y_list_steps.append(y_list)
 #    plot_lim = 3*np.sqrt(N)
     plot_lim = np.sqrt(10*N)
 
+# ステップごとのセグメントの動作
 for rep in range(t_max-1):
-    coordinate_list = scd.terminalSegment(init_coordinate_list, N, 0)
+    # まず両末端を動かす
+    coordinate_list = scd.terminalSegment(coordinate_list, N, 0)
+    coordinate_list = scd.terminalSegment(coordinate_list, N, 1)
+    updated_coordinate_list = coordinate_list.copy()                    # 更新した配置を保存するためのリスト
+    # 次に末端以外のセグメントを動かす
     for i in range(N-1):
-        coordinate_list = scd.segmentMotion(coordinate_list, i+1)
-        coordinate_list = scd.terminalSegment(init_coordinate_list, N, 1)
+        updated_coordinate = scd.segmentMotion(coordinate_list, i+1)    # セグメントiの新座標を取得
+        updated_coordinate_list[i+1] = updated_coordinate               # 更新した配置リストに新座標を代入
+    coordinate_list = updated_coordinate_list.copy()                    # 全セグメントの動作が完了したら、元の配置リストを更新
     x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
     x_list_steps.append(x_list)
     y_list_steps.append(y_list)
@@ -88,9 +95,9 @@ if centerConfig == "W": # 重心描画あり
 anim.controls()
 
 if initConfig == "F": # Fully Extendedからスタートする場合
-    savefile = "./gif/SingleChain_Dynamics_N{0}_{1}steps_FE".format(N, t_max)
+    savefile = "./gif/SingleChain_Dynamics_SAW_N{0}_{1}steps_FE".format(N, t_max)
 if initConfig == "R": # Random Coilからスタートする場合
-    savefile = "./gif/SingleChain_Dynamics_N{0}_{1}steps_RC".format(N, t_max)
+    savefile = "./gif/SingleChain_Dynamics_SAW_N{0}_{1}steps_RC".format(N, t_max)
 anim.save_gif(savefile)
 
 plt.show()
