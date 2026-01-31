@@ -1,11 +1,13 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
 # Flory-Huggins的に分岐数zに対してz-1で対応するようにすることはできていない
+# v3 --- 配置の変化が伝播しないように変更を加えたバージョン（260130）
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-import animatplot as amp
-import singleChainDynamicsFunc_v2 as scd
+import time
+# import animatplot as amp
+import singleChainDynamicsFunc_v3 as scd
 
 try:
     N = int(input('Degree of polymerization (default=100): '))
@@ -35,6 +37,8 @@ R_list_repeat = []
 
 for i in range (M):
 
+    start_time = time.process_time()
+
     x_list_steps = []
     y_list_steps = []
 
@@ -53,15 +57,19 @@ for i in range (M):
 
     for rep in range(t_max-1):
         coordinate_list = scd.terminalSegment(init_coordinate_list, N, 0)
-        for i in range(N-1):
-            coordinate_list = scd.segmentMotion(coordinate_list, i+1)
-            coordinate_list = scd.terminalSegment(init_coordinate_list, N, 1)
+        coordinate_list = scd.terminalSegment(init_coordinate_list, N, 1)   # ３行下にあったのをここに移動（両末端を先に変化させる）
+        for j in range(N-1):                                                # i -> j に変更（繰り返しでiを使っていたので）
+            coordinate_list = scd.segmentMotion(coordinate_list, j+1)
         x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
         x_list_steps.append(x_list)
         y_list_steps.append(y_list)
 
     R_list, R_list_steps = scd.end2endDist(x_list_steps, y_list_steps, N, t_max)
     R_list_repeat.append(R_list)
+
+    end_time = time.process_time()
+    elapsed_time = end_time - start_time
+    print("Repetition {0}/{1} completed in {2:.2f} seconds.".format(i+1, M, elapsed_time))
 
 R_mean_list = scd.calcMean(R_list_repeat, t_max, M)
 

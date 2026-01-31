@@ -1,5 +1,6 @@
 # Functions of Single Chain Dynamics (2d Square Lattice model)
 # v2 --- 重心を奇跡として描画、重心位置の時間変化を追加（240121）
+# v3 --- 配置の変化が伝播しないように変更を加えたバージョン（260130）
 
 import random as rd
 import numpy as np
@@ -61,6 +62,7 @@ def terminalSegment(coordinate_list, N, p):
     return coordinate_list
 
 def segmentMotion(coordinate_list, i):
+    updated_coordinate_list = coordinate_list           # coordinate_listを変更しないようにするため
     angle_list = (0, 90, 180, 270)
     onoff_list = ("on", "off")
     xp = coordinate_list[i-1][0] # p = previous
@@ -75,7 +77,7 @@ def segmentMotion(coordinate_list, i):
         xi = xi
         yi = yi
         updated_coordinate = [xi, yi]
-        coordinate_list[i] = updated_coordinate
+        updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため 
     else:
         # oo===oの形になっているときは[xp, yp]を中心に回転できる
         if xp == xn and yp == yn:
@@ -85,7 +87,7 @@ def segmentMotion(coordinate_list, i):
             xi = xp + int(np.cos(np.radians(angle)))
             yi = yn + int(np.sin(np.radians(angle)))
             updated_coordinate = [xi, yi]
-            coordinate_list[i] = updated_coordinate
+            updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため 
         else:
             if (xp == xi) and ((xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1)):
 #                print("c")
@@ -98,7 +100,7 @@ def segmentMotion(coordinate_list, i):
                     xi = xi
                     yi = yi               
                 updated_coordinate = [xi, yi]
-                coordinate_list[i] = updated_coordinate
+                updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため
             else:
                 if (xn == xi) and ((xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1)):
 #                    print("d")
@@ -111,9 +113,10 @@ def segmentMotion(coordinate_list, i):
                         xi = xi
                         yi = yi   
                     updated_coordinate = [xi, yi]
-                    coordinate_list[i] = updated_coordinate
+                    updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため
                 else:
                     print("e")
+    coordinate_list = updated_coordinate_list                       # updated_coordinate_listをcoordinate_listに戻す
     return coordinate_list
 
 def coordinateList2xyList(coordinate_list, N):
