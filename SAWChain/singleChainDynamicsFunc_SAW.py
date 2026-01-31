@@ -63,7 +63,7 @@ def terminalSegment(coordinate_list, N, p):
         ng_direction = int(np.mod(theta2/90,4)) # NG方向をdirection_listの要素と合わせるため
         direction_list.remove(ng_direction)
         theta3 = rd.choice(direction_list)*90.0
-        print("p=0: {}".format(theta3))
+#        print("p=0: {}".format(theta3))
         x0 = x1 + int(np.cos(np.radians(theta3)))
         y0 = y1 + int(np.sin(np.radians(theta3)))
         updated_coordinate = [x0, y0]
@@ -83,7 +83,7 @@ def terminalSegment(coordinate_list, N, p):
         ng_direction = int(np.mod(theta2/90,4)) # NG方向をdirection_listの要素と合わせるため
         direction_list.remove(ng_direction)
         theta3 = rd.choice(direction_list)*90.0
-        print("p=1: {}".format(theta3))
+#        print("p=1: {}".format(theta3))
         xe = xp + int(np.cos(np.radians(theta3)))
         ye = yp + int(np.sin(np.radians(theta3)))
         updated_coordinate = [xe, ye]
@@ -107,15 +107,15 @@ def segmentMotion(coordinate_list, i):
     yn = coordinate_list[i+1][1]
     # o---o---oの形になっているときは何も動けない
     if (yp == yn and int(np.abs(xn - xp)) == 2) or (xp == xn and int(np.abs(yn - yp)) == 2):
-        print("a")
+#        print("a")
         xi = xi
         yi = yi
         updated_coordinate = [xi, yi]   # 要するに何もしない
     else:       # 「L」字型のとき（振る舞いによって２通りあるので分けている）
         if (xp == xi) and ((xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1)):
-                print("c")
+#                print("c")
                 onoff = rd.choice(onoff_list)
-                print(onoff)
+#                print(onoff)
                 if onoff == "on":                                # 対角線側に移動
                     xi = xn
                     yi = yp
@@ -128,11 +128,13 @@ def segmentMotion(coordinate_list, i):
                     xi = xi
                     yi = yi    
                     updated_coordinate = [xi, yi]                # offの場合は元の座標を登録
+                else:
+                    updated_coordinate = coordinate_list[i]      # とりあえず追加（これがないとプログラムがUnboundLocalErrorで止まる）
         else:
             if (xn == xi) and ((xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1)):
-                print("d")
+#                print("d")
                 onoff = rd.choice(onoff_list)
-                print(onoff)
+#                print(onoff)
                 if onoff == "on":                                # 対角線側に移動
                     xi = xp
                     yi = yn
