@@ -1,5 +1,6 @@
 # Functions of Single Chain Dynamics (2d Square Lattice model)
-# SAW Chainをモデル化
+# SAW Chainをモデル化（260128作成開始）
+# 各ステップで、配置の変化が伝播しないように変更を加えた
 
 import random as rd
 import numpy as np
@@ -50,26 +51,53 @@ def initConfig_Random(N):
 
 # 末端の動き・・・隣を中心に回転できることをプログラム
 def terminalSegment(coordinate_list, N, p):
-    angle_list = (0, 90, 180, 270)
-    angle = rd.choice(angle_list)
-    if p == 0:
+    if p == 0:  # N=0側
+        direction_list = [0, 1, 2, 3]
         x1 = coordinate_list[1][0]
         y1 = coordinate_list[1][1]
-        x0 = x1 + int(np.cos(np.radians(angle)))
-        y0 = y1 + int(np.sin(np.radians(angle)))
+        x2 = coordinate_list[2][0]
+        y2 = coordinate_list[2][1]
+        dx = x2 - x1
+        dy = y2 - y1
+        theta2 = np.degrees(np.arctan2(dy,dx))  # NG（来た方に戻る）方向
+        ng_direction = int(np.mod(theta2/90,4)) # NG方向をdirection_listの要素と合わせるため
+        direction_list.remove(ng_direction)
+        theta3 = rd.choice(direction_list)*90.0
+        print("p=0: {}".format(theta3))
+        x0 = x1 + int(np.cos(np.radians(theta3)))
+        y0 = y1 + int(np.sin(np.radians(theta3)))
         updated_coordinate = [x0, y0]
-        coordinate_list[0] = updated_coordinate
-    if p == 1:
+        if updated_coordinate in coordinate_list:       # もし新座標が既に占有されていたらという条件
+            pass                                        # 更新しない
+        else:                                           # もし新座標が非占有だったらという条件
+            coordinate_list[0] = updated_coordinate     # 新座標を登録
+    if p == 1:  # N=N側
+        direction_list = [0, 1, 2, 3]
+        xpp = coordinate_list[N-2][0]
+        ypp = coordinate_list[N-2][1]
         xp = coordinate_list[N-1][0]
         yp = coordinate_list[N-1][1]
-        xe = xp + int(np.cos(np.radians(angle)))
-        ye = yp + int(np.sin(np.radians(angle)))
+        dx = xp - xpp
+        dy = yp - ypp
+        theta2 = np.degrees(np.arctan2(dy,dx)) + 180.0  # NG（来た方に戻る）方向
+        ng_direction = int(np.mod(theta2/90,4)) # NG方向をdirection_listの要素と合わせるため
+        direction_list.remove(ng_direction)
+        theta3 = rd.choice(direction_list)*90.0
+        print("p=1: {}".format(theta3))
+        xe = xp + int(np.cos(np.radians(theta3)))
+        ye = yp + int(np.sin(np.radians(theta3)))
         updated_coordinate = [xe, ye]
-        coordinate_list[N] = updated_coordinate
+        if updated_coordinate in coordinate_list:       # もし新座標が既に占有されていたらという条件
+            pass                                        # 更新しない
+        else:                                           # もし新座標が非占有だったらという条件
+            coordinate_list[N] = updated_coordinate
     return coordinate_list
 
-def segmentMotion(coordinate_list, i):
-    angle_list = (0, 90, 180, 270)
+# 末端以外のセグメントの動き
+# 大きな変更は、coordinate_listを返り値にするのではなく、i番目のセグメントの新座標のみを返すようにしたこと
+# これに伴い、メインプログラムの方でcoordinate_listの更新を行う形になっている
+
+def segmentMotion(coordinate_list, i):   
     onoff_list = ("on", "off")
     xp = coordinate_list[i-1][0] # p = previous
     yp = coordinate_list[i-1][1]
@@ -79,50 +107,45 @@ def segmentMotion(coordinate_list, i):
     yn = coordinate_list[i+1][1]
     # o---o---oの形になっているときは何も動けない
     if (yp == yn and int(np.abs(xn - xp)) == 2) or (xp == xn and int(np.abs(yn - yp)) == 2):
-#        print("a")
+        print("a")
         xi = xi
         yi = yi
-        updated_coordinate = [xi, yi]
-        coordinate_list[i] = updated_coordinate
-    else:
-        # oo===oの形になっているときは[xp, yp]を中心に回転できる
-        if xp == xn and yp == yn:
-#            print("b")
-            angle = rd.choice(angle_list)
-#            print("angle = {}".format(angle))
-            xi = xp + int(np.cos(np.radians(angle)))
-            yi = yn + int(np.sin(np.radians(angle)))
-            updated_coordinate = [xi, yi]
-            coordinate_list[i] = updated_coordinate
-        else:
-            if (xp == xi) and ((xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1)):
-#                print("c")
+        updated_coordinate = [xi, yi]   # 要するに何もしない
+    else:       # 「L」字型のとき（振る舞いによって２通りあるので分けている）
+        if (xp == xi) and ((xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1)):
+                print("c")
                 onoff = rd.choice(onoff_list)
-#                print(onoff)
-                if onoff == "on":
+                print(onoff)
+                if onoff == "on":                                # 対角線側に移動
                     xi = xn
                     yi = yp
-                if onoff == "off":
+                    temp_coordinate = [xi, yi]
+                    if temp_coordinate in coordinate_list: 
+                        updated_coordinate = coordinate_list[i]  # 既に占有されている場合は更新しないため、元の座標を再登録
+                    else:
+                        updated_coordinate = temp_coordinate     # 新座標を登録
+                if onoff == "off":                               # 動かないという選択肢
                     xi = xi
-                    yi = yi               
-                updated_coordinate = [xi, yi]
-                coordinate_list[i] = updated_coordinate
-            else:
-                if (xn == xi) and ((xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1)):
-#                    print("d")
-                    onoff = rd.choice(onoff_list)
-#                    print(onoff)
-                    if onoff == "on":
-                        xi = xp
-                        yi = yn
-                    if onoff == "off":
-                        xi = xi
-                        yi = yi   
-                    updated_coordinate = [xi, yi]
-                    coordinate_list[i] = updated_coordinate
-                else:
-                    print("e")
-    return coordinate_list
+                    yi = yi    
+                    updated_coordinate = [xi, yi]                # offの場合は元の座標を登録
+        else:
+            if (xn == xi) and ((xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1)):
+                print("d")
+                onoff = rd.choice(onoff_list)
+                print(onoff)
+                if onoff == "on":                                # 対角線側に移動
+                    xi = xp
+                    yi = yn
+                    temp_coordinate = [xi, yi]
+                    if temp_coordinate in coordinate_list:
+                        updated_coordinate = coordinate_list[i]  # 既に占有されている場合は更新しないため、元の座標を再登録
+                    else:
+                        updated_coordinate = temp_coordinate     # 新座標を登録
+                if onoff == "off":                               # 動かないという選択肢
+                    xi = xi
+                    yi = yi    
+                    updated_coordinate = [xi, yi]                # offの場合は元の座標を登録 
+    return updated_coordinate
 
 def coordinateList2xyList(coordinate_list, N):
     x_list = [ coordinate_list[i][0] for i in range(N+1) ]
