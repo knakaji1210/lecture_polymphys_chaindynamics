@@ -5,6 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+import time
 # import animatplot as amp
 import singleChainDynamicsFunc_v3 as scd
 
@@ -35,6 +36,8 @@ except ValueError:
 Dc2_list_repeat = []
 
 for i in range (M):
+
+    start_time = time.process_time()
 
     x_list_steps = []
     y_list_steps = []
@@ -74,6 +77,10 @@ for i in range (M):
     Dc2_list_steps = np.asanyarray(Dc2_list_steps, dtype=object)
     Dc2_list_repeat.append(Dc2_list)
 
+    end_time = time.process_time()
+    elapsed_time = end_time - start_time
+    print("Repetition {0}/{1} completed in {2:.2f} seconds.".format(i+1, M, elapsed_time))
+
 Dc_mean_list = scd.calcMean(Dc2_list_repeat, t_max, M)
 ymax = np.max(Dc_mean_list)
 
@@ -87,7 +94,7 @@ err_diff = np.sqrt(cov[0][0])
 Dc_fit_list = [ linearFit(tim, diff, sect) for tim in t ]
 
 fig_text = "Number of repetition: {}".format(M)
-result_text = "$D*100$ = {0:.3f}±{1:.3f}".format(diff*100, err_diff*100)
+result_text = "$D*100$ = {0:.5f}±{1:.5f}".format(diff*100, err_diff*100)
 
 fig_title = "<$d^{{2}}$> vs $t$ ($N$ = {})".format(N)
 
