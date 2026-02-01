@@ -1,7 +1,7 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
 # Flory-Huggins的に分岐数zに対してz-1で対応するようにすることはできていない
 # v2 --- 重心を奇跡として描画（240121）
-# v3 --- 配置の変化が伝播しないように変更を加えたバージョン（260130）
+# v3 --- 一部変更（260201）
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,22 +38,25 @@ except ValueError:
     centerConfig = "O"
 
 if initConfig == "F": # Fully Extendedからスタートする場合
-    init_coordinate_list = scd.initConfig_FullExted(N)
-    x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+    coordinate_list = scd.initConfig_FullExted(N)
+    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
     x_list_steps.append(x_list)
     y_list_steps.append(y_list)
     plot_lim = 0.6*N
 else: #　Random Coilからスタートする場合
-    init_coordinate_list = scd.initConfig_Random(N)
-    x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+    coordinate_list = scd.initConfig_Random(N)
+    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
     x_list_steps.append(x_list)
     y_list_steps.append(y_list)
 #    plot_lim = 3*np.sqrt(N)
     plot_lim = np.sqrt(10*N)
 
+# ステップごとのセグメントの動作
 for rep in range(t_max-1):
-    coordinate_list = scd.terminalSegment(init_coordinate_list, N, 0)
-    coordinate_list = scd.terminalSegment(init_coordinate_list, N, 1)   # ３行下にあったのをここに移動（両末端を先に変化させる）
+    # まず両末端を動かす
+    coordinate_list = scd.terminalSegment(coordinate_list, N, 0)
+    coordinate_list = scd.terminalSegment(coordinate_list, N, 1)   # ３行下にあったのをここに移動（両末端を先に変化させる）
+    # 次に末端以外のセグメントを動かす
     for i in range(N-1):
         coordinate_list = scd.segmentMotion(coordinate_list, i+1)
     x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
