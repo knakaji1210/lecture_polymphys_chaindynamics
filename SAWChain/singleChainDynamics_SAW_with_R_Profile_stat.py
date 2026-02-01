@@ -1,11 +1,12 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
-# Flory-Huggins的に分岐数zに対してz-1で対応するようにすることはできていない
+# SAW Chainをモデル化（260128作成開始、260201一旦完了）
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+import time
 import animatplot as amp
-import singleChainDynamicsFunc_v2 as scd
+import singleChainDynamicsFunc_SAW as scd
 
 try:
     N = int(input('Degree of polymerization (default=100): '))
@@ -35,33 +36,42 @@ R_list_repeat = []
 
 for i in range (M):
 
+    start_time = time.process_time()
+
     x_list_steps = []
     y_list_steps = []
 
     if initConfig == "F": # Fully Extendedからスタートする場合
-        init_coordinate_list = scd.initConfig_FullExted(N)
-        x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+        coordinate_list = scd.initConfig_FullExted(N)
+        x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
         x_list_steps.append(x_list)
         y_list_steps.append(y_list)
         plot_lim = 0.6*N
     else: #　Random Coilからスタートする場合
-        init_coordinate_list = scd.initConfig_Random(N)
-        x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+        coordinate_list = scd.initConfig_Random(N)
+        x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
         x_list_steps.append(x_list)
         y_list_steps.append(y_list)
         plot_lim = 3*np.sqrt(N)
 
+    # ステップごとのセグメントの動作
     for rep in range(t_max-1):
-        coordinate_list = scd.terminalSegment(init_coordinate_list, N, 0)
-        for i in range(N-1):
-            coordinate_list = scd.segmentMotion(coordinate_list, i+1)
-            coordinate_list = scd.terminalSegment(init_coordinate_list, N, 1)
+        # まず両末端を動かす
+        coordinate_list = scd.terminalSegment(coordinate_list, N, 0)
+        coordinate_list = scd.terminalSegment(coordinate_list, N, 1)
+        # 次に末端以外のセグメントを動かす
+        for j in range(N-1):
+            coordinate_list = scd.segmentMotion(coordinate_list, j+1)
         x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
         x_list_steps.append(x_list)
         y_list_steps.append(y_list)
 
     R_list, R_list_steps = scd.end2endDist(x_list_steps, y_list_steps, N, t_max)
     R_list_repeat.append(R_list)
+
+    end_time = time.process_time()
+    elapsed_time = end_time - start_time
+    print("Repetition {0}/{1} completed in {2:.2f} seconds.".format(i+1, M, elapsed_time))
 
 R_mean_list = scd.calcMean(R_list_repeat, t_max, M)
 
@@ -96,7 +106,7 @@ fig.text(0.65, 0.85, fig_text)
 fig.text(0.70, 0.55, result_text1)
 fig.text(0.70, 0.50, result_text2)
 
-savefile = "./png/SingleChain_Dynamics_N{0}_{1}steps_M{2}_R".format(N, t_max, M)
+savefile = "./png/SingleChain_Dynamics_SAW_N{0}_{1}steps_M{2}_R".format(N, t_max, M)
 fig.savefig(savefile, dpi=300)
 
 plt.show()
