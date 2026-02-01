@@ -1,5 +1,4 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
-# Flory-Huggins的に分岐数zに対してz-1で対応するようにすることはできていない
 # v2 --- 重心を奇跡として描画（240121）
 # v3 --- 一部変更（260201）
 

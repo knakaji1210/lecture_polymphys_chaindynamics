@@ -29,12 +29,12 @@ fig = plt.figure(figsize=(8,8))
 
 ax = fig.add_subplot(111, title='Scaling of Diffusion Const, $D$', 
             xlabel='Log($N$)', ylabel='Log($D$)')
-ax.grid(visible=True, which='major', color='#666666', linestyle='--')
+ax.grid(visible=True, which='major', color ='#666666', linestyle='--')
 
 ax.scatter(logDP_list, logDC_list, marker='o', s=50, c='red')
 ax.plot(logDP_list, logDC_fit_list,  c='blue')
 
-fig.text(0.65, 0.75, resultText)
+fig.text(0.65, 0.70, resultText)
 
 savefile = "./png/Scaling_DiffusionConst"
 fig.savefig(savefile, dpi=300)
