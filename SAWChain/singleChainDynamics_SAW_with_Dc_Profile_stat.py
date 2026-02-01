@@ -1,12 +1,13 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
-# Flory-Huggins的に分岐数zに対してz-1で対応するようにすることはできていない
 # 重心位置の時間変化（繰り返し平均後）も描画（240121）
+# SAW Chainをモデル化（260128作成開始、260201一旦完了）
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-import animatplot as amp
-import singleChainDynamicsFunc_v2 as scd
+import time
+# import animatplot as amp
+import singleChainDynamicsFunc_SAW as scd
 
 try:
     N = int(input('Degree of polymerization (default=100): '))
@@ -36,27 +37,32 @@ Dc2_list_repeat = []
 
 for i in range (M):
 
+    start_time = time.process_time()
+
     x_list_steps = []
     y_list_steps = []
 
     if initConfig == "F": # Fully Extendedからスタートする場合
-        init_coordinate_list = scd.initConfig_FullExted(N)
-        x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+        coordinate_list = scd.initConfig_FullExted(N)
+        x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
         x_list_steps.append(x_list)
         y_list_steps.append(y_list)
         plot_lim = 0.6*N
     else: #　Random Coilからスタートする場合
-        init_coordinate_list = scd.initConfig_Random(N)
-        x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+        coordinate_list = scd.initConfig_Random(N)
+        x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
         x_list_steps.append(x_list)
         y_list_steps.append(y_list)
         plot_lim = 3*np.sqrt(N)
 
+    # ステップごとのセグメントの動作
     for rep in range(t_max-1):
-        coordinate_list = scd.terminalSegment(init_coordinate_list, N, 0)
-        for i in range(N-1):
-            coordinate_list = scd.segmentMotion(coordinate_list, i+1)
-            coordinate_list = scd.terminalSegment(init_coordinate_list, N, 1)
+        # まず両末端を動かす
+        coordinate_list = scd.terminalSegment(coordinate_list, N, 0)
+        coordinate_list = scd.terminalSegment(coordinate_list, N, 1)
+        # 次に末端以外のセグメントを動かす
+        for j in range(N-1):                       # i -> j に変更（繰り返しでiを使っていたので）
+            coordinate_list = scd.segmentMotion(coordinate_list, j+1)        
         x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
         x_list_steps.append(x_list)
         y_list_steps.append(y_list)
@@ -71,10 +77,15 @@ for i in range (M):
     Dc2_list_steps = np.asanyarray(Dc2_list_steps, dtype=object)
     Dc2_list_repeat.append(Dc2_list)
 
+    end_time = time.process_time()
+    elapsed_time = end_time - start_time
+    print("Repetition {0}/{1} completed in {2:.2f} seconds.".format(i+1, M, elapsed_time))
+
 Dc_mean_list = scd.calcMean(Dc2_list_repeat, t_max, M)
+ymax = np.max(Dc_mean_list)
 
 def linearFit(t, diff, b):
-    return  2*diff*t+b
+    return  4*diff*t+b          # 2次元なので<d^2> = 4*D*t
 
 param, cov = curve_fit(linearFit, t, Dc_mean_list)
 diff = param[0]
@@ -89,7 +100,7 @@ fig_title = "<$d^{{2}}$> vs $t$ ($N$ = {})".format(N)
 
 fig = plt.figure(figsize=(8,8))
 ax = fig.add_subplot(111, title=fig_title, xlabel='$t$', ylabel='<$d^{{2}}$>',
-        xlim=[0, t_max], ylim=[0 , 3*t_max/N])
+        xlim=[0, t_max], ylim=[0 , 1.5*ymax])
 ax.grid(axis='both', color="gray", lw=0.5)
 
 # Diffusion const
@@ -100,7 +111,7 @@ ax.scatter(t, Dc_mean_list, marker="o", s=30, color='blue')
 fig.text(0.65, 0.85, fig_text)
 fig.text(0.65, 0.80, result_text)
 
-savefile = "./png/SingleChain_Dynamics_N{0}_{1}steps_M{2}_Dc".format(N, t_max, M)
+savefile = "./png/SingleChain_Dynamics_SAW_N{0}_{1}steps_M{2}_Dc".format(N, t_max, M)
 fig.savefig(savefile, dpi=300)
 
 plt.show()
