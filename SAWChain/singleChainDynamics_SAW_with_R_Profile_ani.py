@@ -1,11 +1,11 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
-# Flory-Huggins的に分岐数zに対してz-1で対応するようにすることはできていない
 # v2 --- 重心を奇跡として描画（240121）
+# SAW Chainをモデル化（260128作成開始、260201一旦完了）
 
 import numpy as np
 import matplotlib.pyplot as plt
 import animatplot as amp
-import singleChainDynamicsFunc_v2 as scd
+import singleChainDynamicsFunc_SAW as scd
 
 try:
     N = int(input('Degree of polymerization (default=100): '))
@@ -37,24 +37,27 @@ except ValueError:
     centerConfig = "O"
 
 if initConfig == "F": # Fully Extendedからスタートする場合
-    init_coordinate_list = scd.initConfig_FullExted(N)
-    x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+    coordinate_list = scd.initConfig_FullExted(N)
+    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
     x_list_steps.append(x_list)
     y_list_steps.append(y_list)
     plot_lim = 0.6*N
 else: #　Random Coilからスタートする場合
-    init_coordinate_list = scd.initConfig_Random(N)
-    x_list, y_list = scd.coordinateList2xyList(init_coordinate_list, N)
+    coordinate_list = scd.initConfig_Random(N)
+    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
     x_list_steps.append(x_list)
     y_list_steps.append(y_list)
 #    plot_lim = 3*np.sqrt(N)
     plot_lim = np.sqrt(10*N)
 
+# ステップごとのセグメントの動作
 for rep in range(t_max-1):
-    coordinate_list = scd.terminalSegment(init_coordinate_list, N, 0)
+    # まず両末端を動かす
+    coordinate_list = scd.terminalSegment(coordinate_list, N, 0)
+    coordinate_list = scd.terminalSegment(coordinate_list, N, 1)
+    # 次に末端以外のセグメントを動かす
     for i in range(N-1):
         coordinate_list = scd.segmentMotion(coordinate_list, i+1)
-        coordinate_list = scd.terminalSegment(init_coordinate_list, N, 1)
     x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
     x_list_steps.append(x_list)
     y_list_steps.append(y_list)
@@ -89,7 +92,7 @@ ax2 = fig.add_subplot(122, title=fig_title2, xlabel='$t$', ylabel='$R$',
         xlim=[0, t_max], ylim=[0 , 1.2*N])
 ax2.grid(axis='both', color="gray", lw=0.5)
 
-ax2.plot(t, np.sqrt(N)*np.ones(len(t)), ls='--', color="gray", lw=1)
+ax2.plot(t, (N**(3/4))*np.ones(len(t)), ls='--', color="gray", lw=1)
 
 end2endDistance = amp.blocks.Scatter(time_steps, R_list_steps, ax=ax2, marker="o", s=30, color='blue')
 
@@ -102,9 +105,9 @@ if centerConfig == "W": # 重心描画あり
 anim.controls()
 
 if initConfig == "F": # Fully Extendedからスタートする場合
-    savefile = "./gif/SingleChain_Dynamics_N{0}_{1}steps_FE_with_R".format(N, t_max)
+    savefile = "./gif/SingleChain_Dynamics_SAW_N{0}_{1}steps_FE_with_R".format(N, t_max)
 if initConfig == "R": # Random Coilからスタートする場合
-    savefile = "./gif/SingleChain_Dynamics_N{0}_{1}steps_RC_with_R".format(N, t_max)
+    savefile = "./gif/SingleChain_Dynamics_SAW_N{0}_{1}steps_RC_with_R".format(N, t_max)
 anim.save_gif(savefile)
 
 plt.show()
