@@ -1,6 +1,6 @@
 # Functions of Single Chain Dynamics (2d Square Lattice model)
 # v2 --- 重心を奇跡として描画、重心位置の時間変化を追加（240121）
-# v3 --- 配置の変化が伝播しないように変更を加えたバージョン（260130）
+# v3 --- 一部変更（260201）
 
 import random as rd
 import numpy as np
@@ -61,8 +61,10 @@ def terminalSegment(coordinate_list, N, p):
         coordinate_list[N] = updated_coordinate
     return coordinate_list
 
+# 末端以外のセグメントの動き
+# 安定バージョンとして利用するこのバージョンではcoordinate_listを返り値とする
 def segmentMotion(coordinate_list, i):
-    updated_coordinate_list = coordinate_list           # coordinate_listを変更しないようにするため
+    updated_coordinate_list = coordinate_list.copy()    # coordinate_listを変更しないようにするため           # coordinate_listを変更しないようにするため
     angle_list = (0, 90, 180, 270)
     onoff_list = ("on", "off")
     xp = coordinate_list[i-1][0] # p = previous
@@ -88,15 +90,15 @@ def segmentMotion(coordinate_list, i):
             yi = yn + int(np.sin(np.radians(angle)))
             updated_coordinate = [xi, yi]
             updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため 
-        else:
+        else:     # 「L」字型のとき（振る舞いによって２通りあるので分けている）
             if (xp == xi) and ((xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1)):
 #                print("c")
                 onoff = rd.choice(onoff_list)
 #                print(onoff)
-                if onoff == "on":
+                if onoff == "on":                                # 対角線側に移動
                     xi = xn
                     yi = yp
-                if onoff == "off":
+                if onoff == "off":                               # 動かない
                     xi = xi
                     yi = yi               
                 updated_coordinate = [xi, yi]
@@ -106,17 +108,17 @@ def segmentMotion(coordinate_list, i):
 #                    print("d")
                     onoff = rd.choice(onoff_list)
 #                    print(onoff)
-                    if onoff == "on":
+                    if onoff == "on":                                # 対角線側に移動
                         xi = xp
                         yi = yn
-                    if onoff == "off":
+                    if onoff == "off":                               # 動かない
                         xi = xi
                         yi = yi   
                     updated_coordinate = [xi, yi]
                     updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため
                 else:
                     print("e")
-    coordinate_list = updated_coordinate_list                       # updated_coordinate_listをcoordinate_listに戻す
+    coordinate_list = updated_coordinate_list                       # updated_coordinate_listをcoordinate_listに戻す（ここは.copy()は不要？）                              # updated_coordinate_listをcoordinate_listに戻す
     return coordinate_list
 
 def coordinateList2xyList(coordinate_list, N):
