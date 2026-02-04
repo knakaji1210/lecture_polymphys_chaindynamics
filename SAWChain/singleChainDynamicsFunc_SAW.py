@@ -112,20 +112,20 @@ def segmentMotion(coordinate_list, i):
         updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため 
     else:     # 「L」字型のとき（振る舞いによって２通りあるので分けている）
         if (xp == xi) and ((xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1)):
-#                print("c")
-                onoff = rd.choice(onoff_list)
-#                print(onoff)
-                if onoff == "on":                                # 対角線側に移動
-                    xi = xn
-                    yi = yp
-                if onoff == "off":                               # 動かない
-                    xi = xi
-                    yi = yi               
-                updated_coordinate = [xi, yi]
-                if updated_coordinate in coordinate_list: 
-                    pass
-                else:
-                    updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため
+#            print("c")
+            onoff = rd.choice(onoff_list)
+#            print(onoff)
+            if onoff == "on":                                # 対角線側に移動
+                xi = xn
+                yi = yp
+            if onoff == "off":                               # 動かない
+                xi = xi
+                yi = yi               
+            updated_coordinate = [xi, yi]
+            if updated_coordinate in coordinate_list: 
+                pass
+            else:
+                updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため
         else:
             if (xn == xi) and ((xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1)):
 #                print("d")
