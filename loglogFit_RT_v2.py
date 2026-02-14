@@ -20,8 +20,6 @@ RT_err_val = RT_err_val.split(',')
 RT_err_list = [ float(val) for val in RT_err_val ]
 logRT_err_list = [ RT_err/RT for RT_err, RT in zip(RT_err_list, RT_list)]   # 誤差伝播
 
-print(logRT_err_list)
-
 def loglogFit(x, a, b):
     return  a*x + b
 
