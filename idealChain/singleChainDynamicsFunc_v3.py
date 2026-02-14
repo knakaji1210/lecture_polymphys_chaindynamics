@@ -98,26 +98,25 @@ def segmentMotion(coordinate_list, i):
                 if onoff == "on":                                # 対角線側に移動
                     xi = xn
                     yi = yp
-                if onoff == "off":                               # 動かない
+                elif onoff == "off":                               # 動かない
                     xi = xi
                     yi = yi               
                 updated_coordinate = [xi, yi]
                 updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため
-            else:
-                if (xn == xi) and ((xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1)):
-#                    print("d")
-                    onoff = rd.choice(onoff_list)
-#                    print(onoff)
-                    if onoff == "on":                                # 対角線側に移動
-                        xi = xp
-                        yi = yn
-                    if onoff == "off":                               # 動かない
-                        xi = xi
-                        yi = yi   
-                    updated_coordinate = [xi, yi]
-                    updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため
-                else:
-                    print("e")
+            elif (xn == xi) and ((xn == xp - 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp + 1) or (xn == xp + 1 and yn == yp - 1) or (xn == xp - 1 and yn == yp - 1)):
+#                print("d")
+                onoff = rd.choice(onoff_list)
+#                print(onoff)
+                if onoff == "on":                                # 対角線側に移動
+                    xi = xp
+                    yi = yn
+                if onoff == "off":                               # 動かない
+                    xi = xi
+                    yi = yi   
+                updated_coordinate = [xi, yi]
+                updated_coordinate_list[i] = updated_coordinate # coordinate_listを変更しないようにするため
+#            else:
+#                print("e")
     coordinate_list = updated_coordinate_list                       # updated_coordinate_listをcoordinate_listに戻す（ここは.copy()は不要？）                              # updated_coordinate_listをcoordinate_listに戻す
     return coordinate_list
 

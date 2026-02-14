@@ -55,14 +55,18 @@ for i in range (M):
         y_list_steps.append(y_list)
         plot_lim = 3*np.sqrt(N)
 
+    orderedArray = np.arange(1,N)   # 260214追加
+
     # ステップごとのセグメントの動作
     for rep in range(t_max-1):
         # まず両末端を動かす
         coordinate_list = scd.terminalSegment(coordinate_list, N, 0)
         coordinate_list = scd.terminalSegment(coordinate_list, N, 1)   # ３行下にあったのをここに移動（両末端を先に変化させる）
         # 次に末端以外のセグメントを動かす
+        shuffledArray = np.random.permutation(orderedArray)   # 260214追加
         for j in range(N-1):                                                # i -> j に変更（繰り返しでiを使っていたので）
-            coordinate_list = scd.segmentMotion(coordinate_list, j+1)
+#            coordinate_list = scd.segmentMotion(coordinate_list, j+1)                   # こちらが元々
+            coordinate_list = scd.segmentMotion(coordinate_list, shuffledArray[j])      # 260214変更
         x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
         x_list_steps.append(x_list)
         y_list_steps.append(y_list)
