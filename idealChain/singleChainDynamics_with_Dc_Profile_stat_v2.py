@@ -99,8 +99,8 @@ std_logDc = np.std(logDc_list)
 
 print("N = {0}, Max Steps = {1}".format(N, t_max))
 print("Rep (fitting) = {0}, Rep (statistics) = {1}".format(M, repeat))
-print("Mean of relaxation time log(τ): {0:.6f}".format(mean_logDc))
-print("STD of log(τ): {0:.6f}".format(std_logDc))
+print("Mean of diffusion constant log(D): {0:.6f}".format(mean_logDc))
+print("STD of log(D): {0:.6f}".format(std_logDc))
 
 fig_text = "Number of repetition: {}".format(M)
 result_text = "$D*100$ = {0:.5f}±{1:.5f}".format(diff*100, err_diff*100)
