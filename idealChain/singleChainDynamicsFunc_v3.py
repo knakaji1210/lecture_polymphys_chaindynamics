@@ -1,6 +1,7 @@
 # Functions of Single Chain Dynamics (2d Square Lattice model)
 # v2 --- 重心を奇跡として描画、重心位置の時間変化を追加（240121）
 # v3 --- 一部変更（260201）
+# Reptation開発時に見つけた諸々を実装
 
 import random as rd
 import numpy as np
@@ -124,59 +125,3 @@ def coordinateList2xyList(coordinate_list, N):
     x_list = [ coordinate_list[i][0] for i in range(N+1) ]
     y_list = [ coordinate_list[i][1] for i in range(N+1) ]
     return x_list, y_list
-
-# 末端間距離
-def end2endDist(x_list_steps, y_list_steps, N, t_max):
-    R_list = []
-    for i in range(t_max):
-        x0 = x_list_steps[i][0]
-        y0 = y_list_steps[i][0]
-        xe = x_list_steps[i][N]
-        ye = y_list_steps[i][N]
-        R = np.sqrt((x0 - xe)**2 + (y0 - ye)**2)
-        R_list.append(R)
-    R_list_steps = [ R_list[:i] for i in range(t_max+1) ]
-    R_list_steps = R_list_steps[1:]
-    return R_list, R_list_steps
-
-# 重心位置
-def centerOfMass(x_list_steps, y_list_steps, t_max):
-    cx_list = []
-    cy_list = []
-    for i in range(t_max):
-        xg = np.mean(x_list_steps[i])
-        yg = np.mean(y_list_steps[i])
-        cx_list.append(xg)
-        cy_list.append(yg)
-    cx_list_steps = [ cx_list[:i] for i in range(t_max+1) ]
-    cy_list_steps = [ cy_list[:i] for i in range(t_max+1) ]
-    cx_list_steps = cx_list_steps[1:]
-    cy_list_steps = cy_list_steps[1:]
-    return cx_list, cy_list, cx_list_steps, cy_list_steps
-
-# 重心移動距離（初期ステップ位置を0に）
-def centerOfMassDist(cx_list, cy_list, t_max):
-    Dc2_list = []
-    for i in range(t_max):
-        cx0 = cx_list[0]
-        cy0 = cy_list[0]
-        cx = cx_list[i]
-        cy = cy_list[i]
-        Dc2 = (cx0 - cx)**2 + (cy0 - cy)**2
-        Dc2_list.append(Dc2)
-    Dc2_list_steps = [ Dc2_list[:i] for i in range(t_max+1) ]
-    Dc2_list_steps = Dc2_list_steps[1:]
-    return Dc2_list, Dc2_list_steps
-
-def timeStep(t):
-    time_steps = [ t[:i].tolist() for i in range(len(t)+1) ]
-    time_steps = time_steps[1:]
-    return time_steps
-
-def calcMean(Data_list_repeat, t_max, M):
-    Data_mean_list = []
-    for i in range(t_max):
-        Data_rep_list = [ Data_list_repeat[j][i] for j in range(M) ]
-        Data_mean = np.mean(Data_rep_list)
-        Data_mean_list.append(Data_mean)
-    return Data_mean_list
