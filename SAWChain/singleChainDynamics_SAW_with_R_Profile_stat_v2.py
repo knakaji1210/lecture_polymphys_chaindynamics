@@ -1,12 +1,14 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
 # SAW Chainをモデル化（260128作成開始、260201一旦完了）
+# FuncMを利用する形に変更
+# フィッティングの繰り返しに加え、それをさらに繰り返して標準偏差を正しく算出できるようにした
+# ただし、描画はそのうちの一つ（最後のもの）を表記するようにした
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import time
-import animatplot as amp
-import singleChainDynamicsFunc_SAW_v2 as scd
+import singleChainDynamicsFuncM_SAW_v1 as scdm
 
 try:
     N = int(input('Degree of polymerization (default=100): '))
@@ -23,6 +25,11 @@ try:
 except ValueError:
     M = 100
 
+try:
+    repeat = int(input('Number of repeat for statistical analysis (default=50): '))
+except ValueError:
+    repeat = 50
+
 t = np.linspace(0, t_max-1, t_max)
 
 try:
@@ -32,69 +39,66 @@ try:
 except ValueError:
     initConfig = "F"
 
-R_list_repeat = []
-
-for i in range (M):
-
-    start_time = time.process_time()
-
-    x_list_steps = []
-    y_list_steps = []
-
-    if initConfig == "F": # Fully Extendedからスタートする場合
-        coordinate_list = scd.initConfig_FullExted(N)
-        x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
-        x_list_steps.append(x_list)
-        y_list_steps.append(y_list)
-        plot_lim = 0.6*N
-    else: #　Random Coilからスタートする場合
-        coordinate_list = scd.initConfig_Random(N)
-        x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
-        x_list_steps.append(x_list)
-        y_list_steps.append(y_list)
-        plot_lim = 3*np.sqrt(N)
-
-    orderedArray = np.arange(1,N)   # 260214追加
-
-    # ステップごとのセグメントの動作
-    for rep in range(t_max-1):
-        # まず両末端を動かす
-        coordinate_list = scd.terminalSegment(coordinate_list, N, 0)
-        coordinate_list = scd.terminalSegment(coordinate_list, N, 1)
-        # 次に末端以外のセグメントを動かす
-        shuffledArray = np.random.permutation(orderedArray)   # 260214追加
-        for j in range(N-1):
-#            coordinate_list = scd.segmentMotion(coordinate_list, j+1)                  # こちらが元々
-           coordinate_list = scd.segmentMotion(coordinate_list, shuffledArray[j])      # 260214変更
-        x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
-        x_list_steps.append(x_list)
-        y_list_steps.append(y_list)
-
-    R_list, R_list_steps = scd.end2endDist(x_list_steps, y_list_steps, N, t_max)
-    R_list_repeat.append(R_list)
-
-    end_time = time.process_time()
-    elapsed_time = end_time - start_time
-    print("Repetition {0}/{1} completed in {2:.2f} seconds.".format(i+1, M, elapsed_time))
-
-R_mean_list = scd.calcMean(R_list_repeat, t_max, M)
+if initConfig == "F": # Fully Extendedからスタートする場合
+    plot_lim = 0.6*N
+else: #　Random Coilからスタートする場合
+#    plot_lim = 3*np.sqrt(N)
+    plot_lim = np.sqrt(10*N)
 
 def expDecayFit(t, tau, a, b):
     return  a*np.exp(-t/tau)+b
 
-param, cov = curve_fit(expDecayFit, t, R_mean_list)
-tau = param[0]
-pref = param[1]
-equiR = param[2]
-err_tau = np.sqrt(cov[0][0])
-err_equiR = np.sqrt(cov[2][2])
-R_fit_list = [ expDecayFit(tim, tau, pref, equiR) for tim in t ]
+tau_list = []
+
+for j in range (repeat):
+
+    start_time_rep = time.process_time()
+
+    R_list_repeat = []
+
+    for i in range (M):
+
+        start_time = time.process_time()
+
+        x_list_steps, y_list_steps = scdm.SAWChainMotion(N, t_max, initConfig)
+
+        R_list, R_list_steps = scdm.end2endDist(x_list_steps, y_list_steps, N, t_max)
+        R_list_repeat.append(R_list)
+
+        end_time = time.process_time()
+        elapsed_time = end_time - start_time
+#        print("Repetition {0}/{1} completed in {2:.2f} seconds.".format(i+1, M, elapsed_time))
+
+    R_mean_list = scdm.calcMean(R_list_repeat, t_max, M)
+
+    param, cov = curve_fit(expDecayFit, t, R_mean_list)
+    tau = param[0]
+    pref = param[1]
+    equiR = param[2]
+    err_tau = np.sqrt(cov[0][0])
+    err_equiR = np.sqrt(cov[2][2])
+    R_fit_list = [ expDecayFit(tim, tau, pref, equiR) for tim in t ]
+    tau_list.append(tau)
+
+    end_time_rep = time.process_time()
+    elapsed_time_rep = end_time_rep - start_time_rep
+    print("Repetition {0}/{1} completed in {2:.2f} seconds.".format(j+1, repeat, elapsed_time_rep))
+
+# 以下はlog(tau)をエラー付きで記録するため
+logtau_list = [ np.log10(tau) for tau in tau_list ]
+mean_logtau = np.mean(logtau_list)
+std_logtau = np.std(logtau_list)
+
+print("N = {0}, Max Steps = {1}".format(N, t_max))
+print("Rep (fitting) = {0}, Rep (statistics) = {1}".format(M, repeat))
+print("Mean of relaxation time log(τ): {0:.4f}".format(mean_logtau))
+print("STD of log(τ): {0:.4f}".format(std_logtau))
 
 fig_text = "Number of repetition: {}".format(M)
 result_text1 = "$τ$ = {0:.2f}±{1:.2f}".format(tau, err_tau)
 result_text2 = "$R_{{equi}}$ = {0:.2f}±{1:.2f}".format(equiR, err_equiR)
 
-fig_title = "End-to-end Distance, $R$ ($N$ = {})".format(N)
+fig_title = "End-to-end Distance of Single SAW Chains, $R$ ($N$ = {})".format(N)
 
 fig = plt.figure(figsize=(8,8))
 ax = fig.add_subplot(111, title=fig_title, xlabel='$t$', ylabel='$R$',
