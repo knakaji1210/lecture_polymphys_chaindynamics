@@ -1,11 +1,12 @@
 # Animation of Single Chain Dynamics (2d Square Lattice model)
 # v2 --- 重心を奇跡として描画（240121）
 # SAW Chainをモデル化（260128作成開始、260201一旦完了）
+# v2 Reptation開発時に見つけた諸々を実装
 
 import numpy as np
 import matplotlib.pyplot as plt
 import animatplot as amp
-import singleChainDynamicsFunc_SAW as scd
+import singleChainDynamicsFunc_SAW_v2 as scd
 
 try:
     N = int(input('Degree of polymerization (default=100): '))

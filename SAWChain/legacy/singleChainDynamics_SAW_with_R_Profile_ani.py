@@ -5,7 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import animatplot as amp
-import singleChainDynamicsFunc_SAW as scd
+import singleChainDynamicsFunc_SAW_v2 as scd
 
 try:
     N = int(input('Degree of polymerization (default=100): '))
