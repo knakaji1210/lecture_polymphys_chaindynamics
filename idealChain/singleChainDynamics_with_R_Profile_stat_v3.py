@@ -93,8 +93,8 @@ std_logtau = np.std(logtau_list)
 
 print("N = {0}, Max Steps = {1}".format(N, t_max))
 print("Rep (fitting) = {0}, Rep (statistics) = {1}".format(M, repeat))
-print("Mean of relaxation time log(τ): {0:.2f}".format(mean_logtau))
-print("STD of log(τ): {0:.2f}".format(std_logtau))
+print("Mean of relaxation time log(τ): {0:.4f}".format(mean_logtau))
+print("STD of log(τ): {0:.4f}".format(std_logtau))
 
 fig_text = "Number of repetition: {}".format(M)
 result_text1 = "$τ$ = {0:.2f}±{1:.2f}".format(tau, err_tau)

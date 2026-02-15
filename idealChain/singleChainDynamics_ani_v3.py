@@ -44,7 +44,6 @@ else: #　Random Coilからスタートする場合
 
 x_list_steps, y_list_steps = scdm.idealChainMotion(N, t_max, initConfig)
 
-
 # numpyのバージョンアップにより、""ndarray from ragged nested sequences"の制限が厳しくなり、
 # animatplotの途中でエラーが出るようになった。そのための修正が以下の２行
 x_list_steps = np.asanyarray(x_list_steps, dtype=object)
