@@ -3,11 +3,12 @@
 # SAW Chainをモデル化（260128作成開始、260201一旦完了）
 # v2 Reptation開発時に見つけた諸々を実装
 # 末端以外のセグメントを動かす順番をランダムに変更（260208）
+# FuncMを利用する形に変更
 
 import numpy as np
 import matplotlib.pyplot as plt
 import animatplot as amp
-import singleChainDynamicsFunc_SAW_v2 as scd
+import singleChainDynamicsFuncM_SAW_v1 as scdm
 
 try:
     N = int(input('Degree of polymerization (default=100): '))
@@ -20,9 +21,6 @@ except ValueError:
     t_max = 100
 
 t = np.linspace(0, t_max-1, t_max)
-
-x_list_steps = []
-y_list_steps = []
 
 try:
     initConfig = input('Initial Configuration (Fully Extended (F) or Random Coil (R)): ')
@@ -39,34 +37,12 @@ except ValueError:
     centerConfig = "O"
 
 if initConfig == "F": # Fully Extendedからスタートする場合
-    coordinate_list = scd.initConfig_FullExted(N)
-    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
-    x_list_steps.append(x_list)
-    y_list_steps.append(y_list)
     plot_lim = 0.6*N
 else: #　Random Coilからスタートする場合
-    coordinate_list = scd.initConfig_Random(N)
-    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
-    x_list_steps.append(x_list)
-    y_list_steps.append(y_list)
 #    plot_lim = 3*np.sqrt(N)
     plot_lim = np.sqrt(10*N)
 
-orderedArray = np.arange(1,N)   # 260214追加
-
-# ステップごとのセグメントの動作
-for rep in range(t_max-1):
-    # まず両末端を動かす
-    coordinate_list = scd.terminalSegment(coordinate_list, N, 0)
-    coordinate_list = scd.terminalSegment(coordinate_list, N, 1)
-    # 次に末端以外のセグメントを動かす
-    shuffledArray = np.random.permutation(orderedArray)   # 260214追加
-    for i in range(N-1):
-#        coordinate_list = scd.segmentMotion(coordinate_list, i+1)                   # こちらが元々
-        coordinate_list = scd.segmentMotion(coordinate_list, shuffledArray[i])      # 260214変更    
-    x_list, y_list = scd.coordinateList2xyList(coordinate_list, N)
-    x_list_steps.append(x_list)
-    y_list_steps.append(y_list)
+x_list_steps, y_list_steps = scdm.SAWChainMotion(N, t_max, initConfig)
 
 # numpyのバージョンアップにより、""ndarray from ragged nested sequences"の制限が厳しくなり、
 # animatplotの途中でエラーが出るようになった。そのための修正が以下の２行
@@ -74,11 +50,11 @@ x_list_steps = np.asanyarray(x_list_steps, dtype=object)
 y_list_steps = np.asanyarray(y_list_steps, dtype=object)
 
 # 重心位置
-cx_list, cy_list, cx_list_steps, cy_list_steps = scd.centerOfMass(x_list_steps, y_list_steps, t_max)
+cx_list, cy_list, cx_list_steps, cy_list_steps = scdm.centerOfMass(x_list_steps, y_list_steps, t_max)
 cx_list_steps = np.asanyarray(cx_list_steps, dtype=object)
 cy_list_steps = np.asanyarray(cy_list_steps, dtype=object)
 
-fig_title = "Dynamics of a Single Polymer Chain ($N$ = {0})".format(N)
+fig_title = "Dynamics of a Single SAW Chain ($N$ = {0})".format(N)
 
 fig = plt.figure(figsize=(8,8))
 ax = fig.add_subplot(111, title=fig_title, xlabel='$X$', ylabel='$Y$',
